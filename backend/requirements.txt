@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+faster-whisper
+argostranslate
+soundcard
+numpy

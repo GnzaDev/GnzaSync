@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+    --color-background: #0f1115;
+    --color-surface: #1a1d24;
+    --color-accent: #6366f1;
+}
+
+body {
+    background-color: var(--color-background);
+    color: white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Draggable regions for Tauri */
+.draggable {
+  -webkit-app-region: drag;
+  user-select: none;
+}
