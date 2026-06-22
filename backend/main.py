@@ -5,6 +5,10 @@ import threading
 import time
 import uvicorn
 import torch
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from whisper_service import WhisperService
 from translator import TranslatorService
