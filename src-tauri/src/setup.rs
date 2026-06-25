@@ -179,12 +179,27 @@ pub async fn start_backend(app: AppHandle, state: tauri::State<'_, BackendState>
 
     let main_py = possible_paths.into_iter().find(|p| p.exists()).unwrap_or(PathBuf::from("backend/main.py"));
 
-    let (_, child) = app.shell().command(python_exe.to_string_lossy().to_string())
+    let (mut rx, child) = app.shell().command(python_exe.to_string_lossy().to_string())
         .args(vec![main_py.to_string_lossy().to_string()])
         .spawn()
         .map_err(|e| e.to_string())?;
         
     *state.child.lock().unwrap() = Some(child);
+    
+    tauri::async_runtime::spawn(async move {
+        while let Some(event) = rx.recv().await {
+            match event {
+                tauri_plugin_shell::process::CommandEvent::Stdout(data) => {
+                    println!("Python: {}", String::from_utf8_lossy(&data));
+                }
+                tauri_plugin_shell::process::CommandEvent::Stderr(data) => {
+                    eprintln!("Python Error: {}", String::from_utf8_lossy(&data));
+                }
+                _ => {}
+            }
+        }
+    });
+    
     Ok(())
 }
 

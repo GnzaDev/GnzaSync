@@ -79,11 +79,20 @@ export default function Dashboard() {
   };
 
   const handleStart = async () => {
-    await api.start(sourceLang, targetLang, modelSize, translationEngine, discordRpcEnabled, deeplKey, openaiKey, openRouterKey);
+    try {
+      await api.start(sourceLang, targetLang, modelSize, translationEngine, discordRpcEnabled, deeplKey, openaiKey, openRouterKey);
+    } catch (e) {
+      console.error(e);
+      alert("Error de conexión con el motor local. ¿Se cerró el proceso o está cargando?");
+    }
   };
 
   const handleStop = async () => {
-    await api.stop();
+    try {
+      await api.stop();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleToggleOverlay = async () => {
