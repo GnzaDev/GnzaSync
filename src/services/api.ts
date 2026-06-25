@@ -22,11 +22,23 @@ export const api = {
     }
   },
 
-  start: async (source_lang: string, target_lang: string, model_size: string = 'small') => {
+  start: async (
+    source_lang: string, 
+    target_lang: string, 
+    model_size: string = 'small',
+    engine: string = 'argos',
+    discord_rpc: boolean = true,
+    deepl_key: string = '',
+    openai_key: string = '',
+    openrouter_key: string = ''
+  ) => {
     await fetch(`${API_URL}/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ source_lang, target_lang, model_size }),
+      body: JSON.stringify({ 
+        source_lang, target_lang, model_size, 
+        engine, discord_rpc, deepl_key, openai_key, openrouter_key 
+      }),
     });
   },
 

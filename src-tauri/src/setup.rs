@@ -77,7 +77,14 @@ pub async fn install_python_env(app: AppHandle) -> Result<(), String> {
     // 5. Install dependencies
     emit_progress(&app, "Descargando Inteligencia Artificial (2GB+)...", 50.0);
     
-    let reqs = vec!["torch", "faster-whisper", "argostranslate", "fastapi", "uvicorn", "soundcard", "pydantic"];
+    let reqs = vec!["faster-whisper", "argostranslate", "fastapi", "uvicorn", "soundcard", "pydantic", "openai", "deepl", "pypresence"];
+    
+    // Install Torch with CUDA first
+    emit_progress(&app, "Descargando IA y PyTorch CUDA (2.5GB+)...", 45.0);
+    let torch_args = vec!["-m".to_string(), "pip".to_string(), "install".to_string(), "torch".to_string(), "torchaudio".to_string(), "--index-url".to_string(), "https://download.pytorch.org/whl/cu118".to_string()];
+    let _ = app.shell().command(python_exe.to_string_lossy().to_string()).args(torch_args).output().await;
+
+    emit_progress(&app, "Instalando módulos de Inteligencia Artificial...", 70.0);
     
     let mut pip_args = vec!["-m".to_string(), "pip".to_string(), "install".to_string()];
     pip_args.extend(reqs.iter().map(|s| s.to_string()));

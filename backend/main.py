@@ -4,15 +4,41 @@ from pydantic import BaseModel
 import threading
 import time
 import uvicorn
-import torch
 import sys
 import os
+import subprocess
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+# --- AUTO INSTALL DEPENDENCIES ---
+def ensure_dependencies():
+    missing = []
+    try:
+        import deepl
+    except ImportError:
+        missing.append("deepl")
+    try:
+        import openai
+    except ImportError:
+        missing.append("openai")
+    try:
+        import pypresence
+    except ImportError:
+        missing.append("pypresence")
+        
+    if missing:
+        print(f"Installing missing dependencies: {missing}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", *missing])
+        print("Done installing!")
+
+ensure_dependencies()
+# ---------------------------------
+
+import torch
 from whisper_service import WhisperService
 from translator import TranslatorService
 from audio_capture import AudioCapture
+from discord_rpc import DiscordRPCManager
 
 app = FastAPI()
 
@@ -27,6 +53,7 @@ app.add_middleware(
 whisper_service = WhisperService(model_size="small")
 translator_service = TranslatorService()
 audio_capture = AudioCapture()
+discord_manager = DiscordRPCManager()
 
 class AppState:
     def __init__(self):
@@ -36,7 +63,7 @@ class AppState:
         self.last_translated = ""
         self.capture_thread = None
         
-    def start(self, source_lang, target_lang, model_size):
+    def start(self, source_lang, target_lang, model_size, engine, discord_rpc, deepl_key, openai_key, openrouter_key):
         if self.is_running:
             return
             
@@ -45,15 +72,23 @@ class AppState:
             print(f"Switching model to {model_size}")
             whisper_service = WhisperService(model_size=model_size)
             
+        if discord_rpc:
+            discord_manager.connect()
+            discord_manager.update(source_lang, target_lang, engine)
+            
         self.is_running = True
-        self.capture_thread = threading.Thread(target=self.run_loop, args=(source_lang, target_lang))
+        self.capture_thread = threading.Thread(
+            target=self.run_loop, 
+            args=(source_lang, target_lang, engine, discord_rpc, deepl_key, openai_key, openrouter_key)
+        )
         self.capture_thread.daemon = True
         self.capture_thread.start()
         
     def stop(self):
         self.is_running = False
+        discord_manager.disconnect()
         
-    def run_loop(self, source_lang, target_lang):
+    def run_loop(self, source_lang, target_lang, engine, discord_rpc, deepl_key, openai_key, openrouter_key):
         try:
             for chunk in audio_capture.record_chunks():
                 if not self.is_running:
@@ -68,7 +103,13 @@ class AppState:
                 text, detected_lang = whisper_service.transcribe(chunk, language=source_lang)
                 if text and text.strip():
                     actual_source = detected_lang if source_lang == "auto" else source_lang
-                    translated = translator_service.translate(text, actual_source, target_lang)
+                    translated = translator_service.translate(
+                        text, actual_source, target_lang, 
+                        engine=engine, 
+                        deepl_key=deepl_key, 
+                        openai_key=openai_key, 
+                        openrouter_key=openrouter_key
+                    )
                     self.last_original = text.strip()
                     self.last_translated = translated.strip()
                 
@@ -76,6 +117,7 @@ class AppState:
         except Exception as e:
             print(f"Error in capture loop: {e}")
             self.is_running = False
+            discord_manager.disconnect()
 
 state = AppState()
 
@@ -93,10 +135,18 @@ class StartRequest(BaseModel):
     source_lang: str = "en"
     target_lang: str = "es"
     model_size: str = "small"
+    engine: str = "argos"
+    discord_rpc: bool = True
+    deepl_key: str = ""
+    openai_key: str = ""
+    openrouter_key: str = ""
 
 @app.post("/start")
 def start(req: StartRequest):
-    state.start(req.source_lang, req.target_lang, req.model_size)
+    state.start(
+        req.source_lang, req.target_lang, req.model_size,
+        req.engine, req.discord_rpc, req.deepl_key, req.openai_key, req.openrouter_key
+    )
     return {"status": "started"}
 
 @app.post("/stop")

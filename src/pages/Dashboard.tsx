@@ -7,14 +7,25 @@ import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow, Window } from '@tauri-apps/api/window';
 
 export default function Dashboard() {
-  const { sourceLang, targetLang, setSourceLang, setTargetLang, fontSize, setFontSize, overlayOpacity, setOverlayOpacity, modelSize, setModelSize, subtitleAlign, setSubtitleAlign } = useStore();
+  const { 
+    sourceLang, targetLang, setSourceLang, setTargetLang, 
+    fontSize, setFontSize, overlayOpacity, setOverlayOpacity, 
+    modelSize, setModelSize, subtitleAlign, setSubtitleAlign,
+    translationEngine, setTranslationEngine,
+    deeplKey, setDeeplKey,
+    openaiKey, setOpenaiKey,
+    openRouterKey, setOpenRouterKey,
+    discordRpcEnabled, setDiscordRpcEnabled
+  } = useStore();
   const [status, setStatus] = useState<StatusResponse>({ running: false, latency: 0 });
   const [isEnvReady, setIsEnvReady] = useState<boolean | null>(null);
   const [isBackendReady, setIsBackendReady] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
   const [installProgress, setInstallProgress] = useState({ status: '', percent: 0 });
   const [pipLog, setPipLog] = useState('');
+  const [pipLog, setPipLog] = useState('');
   const [isOverlayVisible, setIsOverlayVisible] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
 
   const overlayWindow = new Window('overlay');
 
@@ -69,7 +80,7 @@ export default function Dashboard() {
   };
 
   const handleStart = async () => {
-    await api.start(sourceLang, targetLang, modelSize);
+    await api.start(sourceLang, targetLang, modelSize, translationEngine, discordRpcEnabled, deeplKey, openaiKey, openRouterKey);
   };
 
   const handleStop = async () => {
@@ -93,7 +104,7 @@ export default function Dashboard() {
     }
     // Small delay to allow backend to release resources
     setTimeout(async () => {
-      await api.start(sourceLang, targetLang, modelSize);
+      await api.start(sourceLang, targetLang, modelSize, translationEngine, discordRpcEnabled, deeplKey, openaiKey, openRouterKey);
     }, 500);
   };
 
@@ -183,6 +194,9 @@ export default function Dashboard() {
                 <div className={`w-1.5 h-1.5 rounded-full ${status.running ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'bg-gray-500'}`} />
                 {status.running ? `Capturando` : 'Detenido'}
               </div>
+              <button onClick={() => setShowSettings(true)} className="p-1.5 bg-white/5 hover:bg-white/10 rounded-full text-gray-400 transition-colors ml-1">
+                <Settings size={14} />
+              </button>
             </div>
           </div>
 
@@ -358,6 +372,85 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+          
+          {/* Settings Modal */}
+          {showSettings && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+              <div className="bg-[#1e1728] border border-white/10 w-full max-w-md rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative">
+                <button onClick={() => setShowSettings(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white">
+                  <X size={16} />
+                </button>
+                <h2 className="text-lg font-bold text-white mb-2">Ajustes Avanzados</h2>
+                
+                <div className="space-y-4 overflow-y-auto max-h-[300px] scrollbar-hide pr-2">
+                  <div>
+                    <label className="text-xs font-bold text-gray-400 mb-1.5 block">Motor de Traducción</label>
+                    <select 
+                      value={translationEngine}
+                      onChange={(e) => setTranslationEngine(e.target.value)}
+                      className="w-full bg-black/30 border border-white/5 rounded-lg p-2 text-sm text-white outline-none focus:border-indigo-500"
+                    >
+                      <option value="argos">Local Gratuito (Argos - Offline)</option>
+                      <option value="deepl">DeepL API (Mejor calidad)</option>
+                      <option value="openai">OpenAI (ChatGPT)</option>
+                      <option value="openrouter">OpenRouter (Múltiples Modelos)</option>
+                    </select>
+                  </div>
+                  
+                  {translationEngine === 'deepl' && (
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 mb-1.5 block">DeepL API Key</label>
+                      <input 
+                        type="password"
+                        value={deeplKey}
+                        onChange={(e) => setDeeplKey(e.target.value)}
+                        className="w-full bg-black/30 border border-white/5 rounded-lg p-2 text-sm text-white outline-none focus:border-indigo-500"
+                        placeholder="Introduce tu Auth Key de DeepL"
+                      />
+                    </div>
+                  )}
+
+                  {translationEngine === 'openai' && (
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 mb-1.5 block">OpenAI API Key</label>
+                      <input 
+                        type="password"
+                        value={openaiKey}
+                        onChange={(e) => setOpenaiKey(e.target.value)}
+                        className="w-full bg-black/30 border border-white/5 rounded-lg p-2 text-sm text-white outline-none focus:border-indigo-500"
+                        placeholder="sk-..."
+                      />
+                    </div>
+                  )}
+
+                  {translationEngine === 'openrouter' && (
+                    <div>
+                      <label className="text-xs font-bold text-gray-400 mb-1.5 block">OpenRouter API Key</label>
+                      <input 
+                        type="password"
+                        value={openRouterKey}
+                        onChange={(e) => setOpenRouterKey(e.target.value)}
+                        className="w-full bg-black/30 border border-white/5 rounded-lg p-2 text-sm text-white outline-none focus:border-indigo-500"
+                        placeholder="sk-or-v1-..."
+                      />
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-white/5">
+                    <label className="flex items-center gap-3 cursor-pointer group mt-2">
+                      <div className={`w-10 h-5 rounded-full transition-colors relative ${discordRpcEnabled ? 'bg-indigo-500' : 'bg-gray-700'}`}>
+                        <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${discordRpcEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </div>
+                      <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
+                        Activar Discord Rich Presence
+                      </span>
+                    </label>
+                    <p className="text-[10px] text-gray-500 mt-1 ml-13">Muestra lo que estás traduciendo en tu estado de Discord.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
       </div>
