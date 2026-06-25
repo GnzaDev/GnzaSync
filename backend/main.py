@@ -143,11 +143,16 @@ class StartRequest(BaseModel):
 
 @app.post("/start")
 def start(req: StartRequest):
-    state.start(
-        req.source_lang, req.target_lang, req.model_size,
-        req.engine, req.discord_rpc, req.deepl_key, req.openai_key, req.openrouter_key
-    )
-    return {"status": "started"}
+    try:
+        state.start(
+            req.source_lang, req.target_lang, req.model_size,
+            req.engine, req.discord_rpc, req.deepl_key, req.openai_key, req.openrouter_key
+        )
+        return {"status": "started"}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "message": str(e)}
 
 @app.post("/stop")
 def stop():

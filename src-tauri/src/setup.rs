@@ -187,16 +187,9 @@ pub async fn start_backend(app: AppHandle, state: tauri::State<'_, BackendState>
     *state.child.lock().unwrap() = Some(child);
     
     tauri::async_runtime::spawn(async move {
-        while let Some(event) = rx.recv().await {
-            match event {
-                tauri_plugin_shell::process::CommandEvent::Stdout(data) => {
-                    println!("Python: {}", String::from_utf8_lossy(&data));
-                }
-                tauri_plugin_shell::process::CommandEvent::Stderr(data) => {
-                    eprintln!("Python Error: {}", String::from_utf8_lossy(&data));
-                }
-                _ => {}
-            }
+        while let Some(_) = rx.recv().await {
+            // Just consume the channel to prevent BrokenPipeError in Python.
+            // DO NOT use println! or eprintln! here because they panic in Windows release mode.
         }
     });
     

@@ -32,7 +32,7 @@ export const api = {
     openai_key: string = '',
     openrouter_key: string = ''
   ) => {
-    await fetch(`${API_URL}/start`, {
+    const res = await fetch(`${API_URL}/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -40,6 +40,9 @@ export const api = {
         engine, discord_rpc, deepl_key, openai_key, openrouter_key 
       }),
     });
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
   },
 
   stop: async () => {
