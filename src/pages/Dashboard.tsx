@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Play, Square, Settings, Eye, EyeOff, RefreshCw, ChevronsRight, Globe, Languages, Minus, X } from 'lucide-react';
+import { Play, Square, Settings, Eye, EyeOff, RefreshCw, ChevronsRight, Globe, Languages, Minus, X, Code, MessageCircle, Info } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { api, type StatusResponse } from '../services/api';
 import { invoke } from '@tauri-apps/api/core';
@@ -114,7 +114,7 @@ export default function Dashboard() {
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
+      <div className="flex-1 overflow-hidden p-6 flex flex-col gap-3">
       {isEnvReady === false ? (
         <div className="flex flex-col items-center justify-center h-full gap-6">
           <div className="text-center space-y-2">
@@ -164,7 +164,7 @@ export default function Dashboard() {
       ) : (
         <>
           {/* Top Bar */}
-          <div className="flex items-center justify-between bg-[#1e1728]/60 border border-white/[0.03] rounded-full p-2 pr-4 shadow-sm shadow-black/20">
+          <div className="flex items-center justify-between bg-[#1e1728]/60 border border-white/[0.03] rounded-full p-2 pr-4 shadow-sm shadow-black/20 shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
                 <ChevronsRight size={16} />
@@ -187,8 +187,8 @@ export default function Dashboard() {
           </div>
 
           {/* Language Selectors */}
-          <div className="grid grid-cols-2 gap-3 mt-2">
-            <div className="flex flex-col bg-[#1e1728]/40 border border-white/[0.03] rounded-2xl p-3 relative hover:bg-[#1e1728]/60 transition-colors">
+          <div className="grid grid-cols-2 gap-3 mt-1 shrink-0">
+            <div className="flex flex-col bg-[#1e1728]/40 border border-white/[0.03] rounded-2xl p-2.5 relative hover:bg-[#1e1728]/60 transition-colors">
               <label className="text-[10px] font-bold text-gray-500 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
                 <Globe size={12} className="opacity-70" /> Hablan en
               </label>
@@ -196,7 +196,7 @@ export default function Dashboard() {
                 value={sourceLang} 
                 onChange={(e) => setSourceLang(e.target.value)}
                 disabled={status.running}
-                className="w-full bg-transparent text-gray-100 font-semibold focus:outline-none appearance-none cursor-pointer disabled:opacity-50"
+                className="w-full bg-transparent text-gray-100 font-semibold focus:outline-none appearance-none cursor-pointer disabled:opacity-50 text-sm"
               >
                 <option value="auto" className="bg-[#1e1728]">Auto-detectar</option>
                 <option value="en" className="bg-[#1e1728]">Inglés</option>
@@ -208,14 +208,14 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="flex flex-col bg-[#1e1728]/40 border border-white/[0.03] rounded-2xl p-3 relative hover:bg-[#1e1728]/60 transition-colors">
+            <div className="flex flex-col bg-[#1e1728]/40 border border-white/[0.03] rounded-2xl p-2.5 relative hover:bg-[#1e1728]/60 transition-colors">
               <label className="text-[10px] font-bold text-gray-500 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
                 <Languages size={12} className="opacity-70" /> Traducir a
               </label>
               <select 
                 value={targetLang}
                 onChange={(e) => setTargetLang(e.target.value)}
-                className="w-full bg-transparent text-gray-100 font-semibold focus:outline-none appearance-none cursor-pointer"
+                className="w-full bg-transparent text-gray-100 font-semibold focus:outline-none appearance-none cursor-pointer text-sm"
               >
                 <option value="es" className="bg-[#1e1728]">Español</option>
                 <option value="en" className="bg-[#1e1728]">Inglés</option>
@@ -225,7 +225,7 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="col-span-2 flex flex-col bg-[#1e1728]/40 border border-white/[0.03] rounded-2xl p-3 relative hover:bg-[#1e1728]/60 transition-colors">
+            <div className="col-span-2 flex flex-col bg-[#1e1728]/40 border border-white/[0.03] rounded-2xl p-2.5 relative hover:bg-[#1e1728]/60 transition-colors">
               <label className="text-[10px] font-bold text-gray-500 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
                  Velocidad del Motor (IA)
               </label>
@@ -233,7 +233,7 @@ export default function Dashboard() {
                 value={modelSize} 
                 onChange={(e) => setModelSize(e.target.value)}
                 disabled={status.running}
-                className="w-full bg-transparent text-gray-100 font-semibold focus:outline-none appearance-none cursor-pointer disabled:opacity-50"
+                className="w-full bg-transparent text-gray-100 font-semibold focus:outline-none appearance-none cursor-pointer disabled:opacity-50 text-sm"
               >
                 <option value="tiny" className="bg-[#1e1728]">Rápido (Baja Latencia - Tiny)</option>
                 <option value="base" className="bg-[#1e1728]">Equilibrado (Recomendado - Base)</option>
@@ -246,8 +246,8 @@ export default function Dashboard() {
           </div>
 
           {/* Controls */}
-          <div className="flex-1 bg-[#1e1728]/40 border border-white/[0.03] rounded-3xl p-5 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-6">
+          <div className="flex-1 bg-[#1e1728]/40 border border-white/[0.03] rounded-3xl p-4 flex flex-col justify-center shrink-0">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
                 <Settings size={14} className="text-gray-500" /> Controles y apariencia
               </h2>
@@ -267,9 +267,9 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex justify-between items-center mb-1.5">
                   <span className="text-sm font-medium text-gray-200">Tamaño de fuente</span>
                   <span className="text-xs bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded-md font-medium border border-indigo-500/20">{fontSize}px</span>
                 </div>
@@ -282,7 +282,7 @@ export default function Dashboard() {
                 />
               </div>
               <div>
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex justify-between items-center mb-1.5">
                   <span className="text-sm font-medium text-gray-200">Opacidad del Fondo</span>
                   <span className="text-xs bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded-md font-medium border border-indigo-500/20">{overlayOpacity}%</span>
                 </div>
@@ -308,27 +308,55 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Start Button */}
-          <div className="mt-auto pt-2">
+          {/* Start Button & Footer */}
+          <div className="mt-auto pt-1 shrink-0">
             {!status.running ? (
               <button 
                 onClick={handleStart} 
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white py-3.5 rounded-2xl font-bold transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)]"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white py-3 rounded-2xl font-bold transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)]"
               >
                 <Play size={16} className="fill-current" /> Iniciar captura
               </button>
             ) : (
               <button 
                 onClick={handleStop} 
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-500/80 to-pink-600/80 hover:from-red-500 hover:to-pink-600 border border-red-500/30 text-white py-3.5 rounded-2xl font-bold transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-500/80 to-pink-600/80 hover:from-red-500 hover:to-pink-600 border border-red-500/30 text-white py-3 rounded-2xl font-bold transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)]"
               >
                 <Square size={16} className="fill-current" /> Detener captura
               </button>
             )}
             
-            <p className="text-center text-[10px] text-gray-500 mt-4 font-medium flex items-center justify-center gap-1.5">
-              Atajo rápido <kbd className="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-gray-400 font-sans">⌘</kbd> <kbd className="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-gray-400 font-sans">⇧</kbd> <kbd className="bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-gray-400 font-sans">S</kbd>
-            </p>
+            {/* Footer with Version and Extras */}
+            <div className="flex items-center justify-between mt-4 px-1">
+              <div className="text-[10px] text-gray-500 font-semibold tracking-wide">
+                GnzaSync v0.1.1
+              </div>
+              
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <span className="text-[9px] mr-2 opacity-50">Atajo: ⌘⇧S</span>
+                
+                <button 
+                  onClick={() => window.open('https://discord.com', '_blank')}
+                  className="p-1.5 bg-white/5 hover:bg-white/10 hover:text-indigo-400 rounded-lg transition-colors cursor-pointer" 
+                  title="Comunidad en Discord"
+                >
+                  <MessageCircle size={12} />
+                </button>
+                <button 
+                  onClick={() => window.open('https://github.com/GnzaDev/GnzaSync', '_blank')}
+                  className="p-1.5 bg-white/5 hover:bg-white/10 hover:text-gray-300 rounded-lg transition-colors cursor-pointer" 
+                  title="Código Fuente en GitHub"
+                >
+                  <Code size={12} />
+                </button>
+                <button 
+                  className="p-1.5 bg-white/5 hover:bg-white/10 hover:text-purple-400 rounded-lg transition-colors cursor-pointer" 
+                  title="Información"
+                >
+                  <Info size={12} />
+                </button>
+              </div>
+            </div>
           </div>
         </>
       )}
