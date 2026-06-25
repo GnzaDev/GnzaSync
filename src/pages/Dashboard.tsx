@@ -23,7 +23,6 @@ export default function Dashboard() {
   const [isInstalling, setIsInstalling] = useState(false);
   const [installProgress, setInstallProgress] = useState({ status: '', percent: 0 });
   const [pipLog, setPipLog] = useState('');
-  const [pipLog, setPipLog] = useState('');
   const [isOverlayVisible, setIsOverlayVisible] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -437,7 +436,13 @@ export default function Dashboard() {
                   )}
 
                   <div className="pt-2 border-t border-white/5">
-                    <label className="flex items-center gap-3 cursor-pointer group mt-2">
+                    <label 
+                      className="flex items-center gap-3 cursor-pointer group mt-2"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setDiscordRpcEnabled(!discordRpcEnabled);
+                      }}
+                    >
                       <div className={`w-10 h-5 rounded-full transition-colors relative ${discordRpcEnabled ? 'bg-indigo-500' : 'bg-gray-700'}`}>
                         <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${discordRpcEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
                       </div>
