@@ -342,7 +342,7 @@ export default function Dashboard() {
             {/* Footer with Version and Extras */}
             <div className="flex items-center justify-between mt-4 px-1">
               <div className="text-[10px] text-gray-500 font-semibold tracking-wide">
-                GnzaSync v0.1.1
+                GnzaSync v1.1.0
               </div>
               
               <div className="flex items-center gap-1.5 text-gray-500">
