@@ -10,6 +10,7 @@ export default function Dashboard() {
   const { sourceLang, targetLang, setSourceLang, setTargetLang, fontSize, setFontSize, overlayOpacity, setOverlayOpacity, modelSize, setModelSize, subtitleAlign, setSubtitleAlign } = useStore();
   const [status, setStatus] = useState<StatusResponse>({ running: false, latency: 0 });
   const [isEnvReady, setIsEnvReady] = useState<boolean | null>(null);
+  const [isBackendReady, setIsBackendReady] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
   const [installProgress, setInstallProgress] = useState({ status: '', percent: 0 });
   const [pipLog, setPipLog] = useState('');
@@ -40,8 +41,9 @@ export default function Dashboard() {
       try {
         const res = await api.getStatus();
         setStatus(res);
+        setIsBackendReady(true);
       } catch (e) {
-        // Backend might be starting
+        setIsBackendReady(false);
       }
     }, 1000);
     
@@ -150,6 +152,14 @@ export default function Dashboard() {
               )}
             </div>
           )}
+        </div>
+      ) : !isBackendReady ? (
+        <div className="flex flex-col items-center justify-center h-full gap-6">
+          <div className="text-center space-y-4">
+             <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+             <h2 className="text-xl font-bold text-gray-200">Iniciando Motor de IA...</h2>
+             <p className="text-gray-400 text-sm max-w-xs mx-auto">Esto puede tomar unos segundos mientras se carga el modelo en la memoria.</p>
+          </div>
         </div>
       ) : (
         <>

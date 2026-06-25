@@ -149,8 +149,15 @@ fn extract_zip(zip_path: &PathBuf, extract_to: &PathBuf) -> Result<(), String> {
     Ok(())
 }
 
+use std::sync::Mutex;
+use tauri_plugin_shell::process::CommandChild;
+
+pub struct BackendState {
+    pub child: Mutex<Option<CommandChild>>,
+}
+
 #[tauri::command]
-pub async fn start_backend(app: AppHandle) -> Result<(), String> {
+pub async fn start_backend(app: AppHandle, state: tauri::State<'_, BackendState>) -> Result<(), String> {
     let tauri_app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
     let app_dir = tauri_app_dir.parent().unwrap_or(&tauri_app_dir).join("GnzaSync");
     let python_exe = app_dir.join("python").join("python.exe");
@@ -165,11 +172,12 @@ pub async fn start_backend(app: AppHandle) -> Result<(), String> {
 
     let main_py = possible_paths.into_iter().find(|p| p.exists()).unwrap_or(PathBuf::from("backend/main.py"));
 
-    let (_, _child) = app.shell().command(python_exe.to_string_lossy().to_string())
+    let (_, child) = app.shell().command(python_exe.to_string_lossy().to_string())
         .args(vec![main_py.to_string_lossy().to_string()])
         .spawn()
         .map_err(|e| e.to_string())?;
         
+    *state.child.lock().unwrap() = Some(child);
     Ok(())
 }
 
